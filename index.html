@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bl Notes</title>
+    
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
@@ -14,6 +18,23 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
+
+        /* Estilo da Logo/Ícone */
+        .app-logo {
+            width: 80px; height: 80px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            object-fit: cover;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-icon {
+            width: 35px; height: 35px;
+            border-radius: 50%;
+            vertical-align: middle;
+            margin-right: 10px;
+            border: 2px solid white;
+        }
 
         /* Login & Recovery */
         #auth-screen {
@@ -27,7 +48,7 @@
         #app-content { display: none; }
 
         header { padding: 20px; text-align: center; background: var(--primary); transition: background 0.3s; }
-        .editable-title { font-size: 1.6rem; font-weight: bold; border: none; background: transparent; text-align: center; width: 100%; outline: none; color: #444; }
+        .editable-title { font-size: 1.6rem; font-weight: bold; border: none; background: transparent; text-align: center; outline: none; color: #444; }
 
         .banner-container {
             width: 95%; height: 140px; margin: 15px auto; border-radius: 15px;
@@ -64,6 +85,7 @@
 
     <div id="auth-screen">
         <div class="auth-box" id="login-box">
+            <img src="icon.png" class="app-logo" alt="Logo" onerror="this.style.display='none'">
             <h1 style="margin-bottom: 20px;">Bl Notes</h1>
             <input type="text" id="user-login" placeholder="Usuário">
             <input type="password" id="pass-login" placeholder="Senha">
@@ -79,17 +101,16 @@
             <input type="text" id="user-reg" placeholder="Crie um Usuário">
             <input type="email" id="email-reg" placeholder="Seu E-mail">
             <input type="password" id="pass-reg" placeholder="Crie uma Senha">
-            <input type="text" id="recovery-q" placeholder="Nome da sua primeira mascote?">
+            <input type="text" id="recovery-q" placeholder="Sua comida favorita? (Segurança)">
             <button class="btn" style="background: var(--accent);" onclick="handleAuth('register')">Cadastrar</button>
             <p style="margin-top: 15px; font-size: 0.8rem; cursor:pointer" onclick="switchAuth('login')">Voltar ao Login</p>
         </div>
 
         <div class="auth-box hidden" id="recover-box">
             <h2>Recuperar Senha</h2>
-            <p style="font-size: 0.7rem; color: #888; margin-bottom: 10px;">Digite seu usuário e a resposta da segurança.</p>
             <input type="text" id="user-rec" placeholder="Usuário">
-            <input type="text" id="answer-rec" placeholder="Resposta da pergunta?">
-            <button class="btn" style="background: var(--primary);" onclick="handleAuth('recover')">Verificar Dados</button>
+            <input type="text" id="answer-rec" placeholder="Resposta da segurança?">
+            <button class="btn" style="background: var(--primary);" onclick="handleAuth('recover')">Verificar</button>
             <div id="result-rec" style="margin-top:10px; font-weight:bold; color: #2d5a4c;"></div>
             <p style="margin-top: 15px; font-size: 0.8rem; cursor:pointer" onclick="switchAuth('login')">Voltar ao Login</p>
         </div>
@@ -97,7 +118,10 @@
 
     <div id="app-content">
         <header>
-            <input type="text" id="list-title" class="editable-title" oninput="saveData()" value="Bl Notes">
+            <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 5px;">
+                <img src="icon.png" class="header-icon" alt="icon" onerror="this.style.display='none'">
+                <input type="text" id="list-title" class="editable-title" oninput="saveData()" value="Bl Notes">
+            </div>
             <div class="banner-container" onclick="document.getElementById('bannerInput').click()">
                 <img id="bannerImg" src="" style="display:none;">
                 <div id="bannerPlaceholder">+ Adicionar Banner</div>
@@ -170,36 +194,27 @@
                 const e = document.getElementById('email-reg').value.trim();
                 const p = document.getElementById('pass-reg').value.trim();
                 const q = document.getElementById('recovery-q').value.trim();
-
-                if(!u || !e || !p || !q) return alert("Preencha todos os campos!");
+                if(!u || !e || !p || !q) return alert("Preencha tudo!");
                 if(localStorage.getItem(`user_${u}`)) return alert("Usuário já existe!");
-
-                const account = { pass: p, email: e, recovery: q, data: userAppData };
-                localStorage.setItem(`user_${u}`, JSON.stringify(account));
-                alert("Conta Bl Notes criada!");
+                localStorage.setItem(`user_${u}`, JSON.stringify({ pass: p, email: e, recovery: q, data: userAppData }));
+                alert("Conta criada!");
                 switchAuth('login');
             } 
-            
             else if(type === 'login') {
                 const u = document.getElementById('user-login').value.trim();
                 const p = document.getElementById('pass-login').value.trim();
                 const stored = JSON.parse(localStorage.getItem(`user_${u}`));
-
                 if(stored && stored.pass === p) {
                     currentUser = u; userAppData = stored.data; startApp();
-                } else alert("Usuário ou Senha incorretos!");
+                } else alert("Erro no login!");
             }
-
             else if(type === 'recover') {
                 const u = document.getElementById('user-rec').value.trim();
                 const q = document.getElementById('answer-rec').value.trim();
                 const stored = JSON.parse(localStorage.getItem(`user_${u}`));
-
                 if(stored && stored.recovery === q) {
-                    document.getElementById('result-rec').innerText = `Sua senha é: ${stored.pass}`;
-                } else {
-                    alert("Dados não conferem!");
-                }
+                    document.getElementById('result-rec').innerText = `Sua senha: ${stored.pass}`;
+                } else alert("Dados incorretos!");
             }
         }
 
@@ -264,9 +279,7 @@
                 closeModal('detailModal'); openModal('mangaModal');
             };
             document.getElementById('btnDelete').onclick = () => {
-                if(confirm("Deseja excluir?")) {
-                    userAppData.items.splice(i, 1); renderGrid(); saveData(); closeModal('detailModal');
-                }
+                if(confirm("Excluir?")) { userAppData.items.splice(i, 1); renderGrid(); saveData(); closeModal('detailModal'); }
             };
             openModal('detailModal');
         }
@@ -284,7 +297,6 @@
                 caps: document.getElementById('mangaCaps').value,
                 link: document.getElementById('mangaLink').value || "#"
             };
-
             if(file) {
                 const reader = new FileReader();
                 reader.onload = () => { data.img = reader.result; finishSave(data); };
@@ -292,7 +304,7 @@
             } else if(editingIndex > -1) {
                 data.img = userAppData.items[editingIndex].img;
                 finishSave(data);
-            } else alert("Selecione uma imagem!");
+            } else alert("Selecione uma capa!");
         }
 
         function finishSave(data) {
