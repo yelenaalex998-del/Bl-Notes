@@ -2,9 +2,16 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bl Notes</title>
     
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#e2e2ff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bl Notes">
+
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
 
@@ -16,115 +23,104 @@
             --card-bg: #ffffff; --text: #555;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; overflow-x: hidden; }
 
-        /* Estilo da Logo/Ícone */
-        .app-logo {
-            width: 80px; height: 80px;
-            border-radius: 20px;
-            margin-bottom: 15px;
-            object-fit: cover;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
+        /* Logo no Login */
+        .app-logo { width: 85px; height: 85px; border-radius: 22px; margin-bottom: 15px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .header-icon { width: 35px; height: 35px; border-radius: 50%; vertical-align: middle; margin-right: 10px; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-        .header-icon {
-            width: 35px; height: 35px;
-            border-radius: 50%;
-            vertical-align: middle;
-            margin-right: 10px;
-            border: 2px solid white;
-        }
-
-        /* Login & Recovery */
-        #auth-screen {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: var(--primary); z-index: 2000;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .auth-box { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 350px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        /* Telas de Auth */
+        #auth-screen { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--primary); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .auth-box { background: white; padding: 30px; border-radius: 25px; width: 88%; max-width: 360px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
         .hidden { display: none !important; }
 
-        #app-content { display: none; }
+        #app-content { display: none; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        header { padding: 20px; text-align: center; background: var(--primary); transition: background 0.3s; }
-        .editable-title { font-size: 1.6rem; font-weight: bold; border: none; background: transparent; text-align: center; outline: none; color: #444; }
+        /* Header */
+        header { padding: 25px 20px; text-align: center; background: var(--primary); transition: 0.3s; border-radius: 0 0 20px 20px; }
+        .editable-title { font-size: 1.7rem; font-weight: bold; border: none; background: transparent; text-align: center; outline: none; color: #444; width: auto; max-width: 200px; }
 
         .banner-container {
-            width: 95%; height: 140px; margin: 15px auto; border-radius: 15px;
-            background: #ffffff66; overflow: hidden; position: relative; border: 2px dashed #00000022;
+            width: 92%; height: 150px; margin: 20px auto; border-radius: 18px;
+            background: #ffffff88; overflow: hidden; position: relative; border: 2px dashed #00000011;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
         .banner-container img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Grid */
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; }
-        .card { background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); cursor: pointer; }
+        /* Grid Visual */
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 15px; }
+        .card { background: var(--card-bg); border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.04); transition: 0.2s; }
+        .card:active { transform: scale(0.95); }
         .card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
         .card-info { padding: 8px 4px; text-align: center; }
         
-        .tag { font-size: 0.5rem; padding: 2px 5px; border-radius: 4px; font-weight: bold; display: inline-block; margin: 1px; }
+        .tag { font-size: 0.55rem; padding: 3px 6px; border-radius: 6px; font-weight: bold; display: inline-block; margin: 1px; text-transform: uppercase; }
         .tag-cat { background: var(--accent); color: #2d5a4c; }
         .tag-status { background: #fff9c4; color: #856404; }
-        .manga-name { font-size: 0.75rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .manga-name { font-size: 0.8rem; font-weight: bold; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #333; }
 
-        /* Modais */
-        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 10px; }
-        .modal-content { background: white; width: 100%; max-width: 400px; padding: 25px; border-radius: 20px; max-height: 90vh; overflow-y: auto; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
-        .btn { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        /* Modais Estilizados */
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
+        .modal-content { background: white; width: 100%; max-width: 380px; padding: 30px; border-radius: 25px; max-height: 85vh; overflow-y: auto; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #eee; border-radius: 12px; font-size: 16px; background: #f9f9f9; outline: none; }
+        .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .btn:active { transform: scale(0.98); opacity: 0.8; }
         
-        .fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: var(--accent); border: none; font-size: 24px; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.2); color: #2d5a4c; }
-        .config-btn { position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; border-radius: 50%; background: #eee; border: none; z-index: 100; color: #666; font-size: 20px; }
+        /* Botões Fixos */
+        .fab { position: fixed; bottom: 25px; right: 25px; width: 65px; height: 65px; border-radius: 50%; background: var(--accent); border: none; font-size: 26px; z-index: 100; box-shadow: 0 8px 20px rgba(0,0,0,0.15); color: #2d5a4c; }
+        .config-btn { position: fixed; bottom: 25px; left: 25px; width: 55px; height: 55px; border-radius: 50%; background: #fff; border: none; z-index: 100; color: #888; font-size: 22px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 
-        .color-palette { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
-        .color-circle { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid #00000011; }
+        .color-palette { display: flex; justify-content: center; gap: 15px; margin: 25px 0; }
+        .color-circle { width: 42px; height: 42px; border-radius: 50%; cursor: pointer; border: 3px solid #eee; transition: 0.2s; }
+        .color-circle:hover { border-color: #ccc; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen">
         <div class="auth-box" id="login-box">
-            <img src="icon.png" class="app-logo" alt="Logo" onerror="this.style.display='none'">
-            <h1 style="margin-bottom: 20px;">Bl Notes</h1>
+            <img src="icon.png" class="app-logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3652/3652191.png'">
+            <h1 style="margin-bottom: 20px; letter-spacing: -1px;">Bl Notes</h1>
             <input type="text" id="user-login" placeholder="Usuário">
             <input type="password" id="pass-login" placeholder="Senha">
             <button class="btn" style="background: var(--accent);" onclick="handleAuth('login')">Entrar</button>
-            <p style="margin-top: 15px; font-size: 0.8rem;">
-                <span onclick="switchAuth('register')" style="cursor:pointer">Criar conta</span> | 
-                <span onclick="switchAuth('recover')" style="cursor:pointer; color: #888;">Esqueci a senha</span>
+            <p style="margin-top: 20px; font-size: 0.85rem;">
+                <span onclick="switchAuth('register')" style="cursor:pointer; color: #666;">Criar conta</span> | 
+                <span onclick="switchAuth('recover')" style="cursor:pointer; color: #aaa;">Recuperar senha</span>
             </p>
         </div>
 
         <div class="auth-box hidden" id="register-box">
-            <h2>Novo Cadastro</h2>
-            <input type="text" id="user-reg" placeholder="Crie um Usuário">
-            <input type="email" id="email-reg" placeholder="Seu E-mail">
-            <input type="password" id="pass-reg" placeholder="Crie uma Senha">
-            <input type="text" id="recovery-q" placeholder="Sua comida favorita? (Segurança)">
+            <h2 style="margin-bottom: 15px;">Nova Conta</h2>
+            <input type="text" id="user-reg" placeholder="Usuário">
+            <input type="email" id="email-reg" placeholder="E-mail">
+            <input type="password" id="pass-reg" placeholder="Senha">
+            <input type="text" id="recovery-q" placeholder="Nome da sua mascote? (Segurança)">
             <button class="btn" style="background: var(--accent);" onclick="handleAuth('register')">Cadastrar</button>
-            <p style="margin-top: 15px; font-size: 0.8rem; cursor:pointer" onclick="switchAuth('login')">Voltar ao Login</p>
+            <p style="margin-top: 20px; font-size: 0.85rem; cursor:pointer; color: #888;" onclick="switchAuth('login')">Voltar</p>
         </div>
 
         <div class="auth-box hidden" id="recover-box">
-            <h2>Recuperar Senha</h2>
-            <input type="text" id="user-rec" placeholder="Usuário">
-            <input type="text" id="answer-rec" placeholder="Resposta da segurança?">
-            <button class="btn" style="background: var(--primary);" onclick="handleAuth('recover')">Verificar</button>
-            <div id="result-rec" style="margin-top:10px; font-weight:bold; color: #2d5a4c;"></div>
-            <p style="margin-top: 15px; font-size: 0.8rem; cursor:pointer" onclick="switchAuth('login')">Voltar ao Login</p>
+            <h2 style="margin-bottom: 10px;">Recuperar</h2>
+            <input type="text" id="user-rec" placeholder="Seu usuário">
+            <input type="text" id="answer-rec" placeholder="Resposta da pergunta?">
+            <button class="btn" style="background: var(--primary);" onclick="handleAuth('recover')">Ver Senha</button>
+            <div id="result-rec" style="margin-top:15px; font-weight:bold; color: #2d5a4c; font-size: 0.9rem;"></div>
+            <p style="margin-top: 20px; font-size: 0.85rem; cursor:pointer; color: #888;" onclick="switchAuth('login')">Voltar</p>
         </div>
     </div>
 
     <div id="app-content">
         <header>
-            <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 5px;">
-                <img src="icon.png" class="header-icon" alt="icon" onerror="this.style.display='none'">
-                <input type="text" id="list-title" class="editable-title" oninput="saveData()" value="Bl Notes">
+            <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+                <img src="icon.png" class="header-icon" onerror="this.style.display='none'">
+                <input type="text" id="list-title" class="editable-title" oninput="saveData()">
             </div>
             <div class="banner-container" onclick="document.getElementById('bannerInput').click()">
                 <img id="bannerImg" src="" style="display:none;">
-                <div id="bannerPlaceholder">+ Adicionar Banner</div>
+                <div id="bannerPlaceholder" style="color: #666; font-weight: 500;">+ Adicionar Banner</div>
             </div>
             <input type="file" id="bannerInput" hidden accept="image/*" onchange="loadBanner(event)">
         </header>
@@ -132,20 +128,21 @@
         <div class="grid" id="mangaGrid"></div>
 
         <button class="fab" onclick="openAddModal()"><i class="fas fa-plus"></i></button>
-        <button class="config-btn" onclick="openModal('configModal')"><i class="fas fa-cog"></i></button>
+        <button class="config-btn" onclick="openModal('configModal')"><i class="fas fa-palette"></i></button>
     </div>
 
     <div id="mangaModal" class="modal">
         <div class="modal-content">
-            <h3 id="modalTitle">Novo</h3>
+            <h3 id="modalTitle" style="margin-bottom:10px;">Nova Obra</h3>
+            <div style="text-align: left; font-size: 0.7rem; color: #999;">CAPA DO MANGÁ</div>
             <input type="file" id="mangaImgInput" accept="image/*">
             <input type="text" id="mangaName" placeholder="Nome">
-            <input type="text" id="mangaCat" placeholder="Categoria">
+            <input type="text" id="mangaCat" placeholder="Categoria (Ex: Manhwa)">
             <input type="text" id="mangaStatus" placeholder="Status">
-            <input type="number" id="mangaCaps" placeholder="Caps">
-            <input type="url" id="mangaLink" placeholder="Link">
+            <input type="number" id="mangaCaps" placeholder="Total de Capítulos">
+            <input type="url" id="mangaLink" placeholder="Link (URL)">
             <button class="btn" style="background: var(--accent);" onclick="saveManga()">Salvar</button>
-            <button class="btn" style="background: #eee;" onclick="closeModal('mangaModal')">Cancelar</button>
+            <button class="btn" style="background: #f5f5f5;" onclick="closeModal('mangaModal')">Cancelar</button>
         </div>
     </div>
 
@@ -153,17 +150,17 @@
         <div class="modal-content">
             <div id="detailContent"></div>
             <button class="btn" id="btnVerOnline" style="background: var(--accent);">Ver Online</button>
-            <div style="display: flex; gap: 5px;">
+            <div style="display: flex; gap: 8px;">
                 <button class="btn" id="btnEdit" style="flex: 1; background: #e2e2ff;">Editar</button>
                 <button class="btn" id="btnDelete" style="flex: 1; background: #ffcccb;">Excluir</button>
             </div>
-            <button class="btn" style="background: #eee;" onclick="closeModal('detailModal')">Voltar</button>
+            <button class="btn" style="background: #f5f5f5;" onclick="closeModal('detailModal')">Voltar</button>
         </div>
     </div>
 
     <div id="configModal" class="modal">
         <div class="modal-content">
-            <h3>Cores</h3>
+            <h3>Tema do App</h3>
             <div class="color-palette">
                 <div class="color-circle" style="background: #e2e2ff;" onclick="changeTheme('#e2e2ff')"></div>
                 <div class="color-circle" style="background: #ffdee9;" onclick="changeTheme('#ffdee9')"></div>
@@ -171,12 +168,17 @@
                 <div class="color-circle" style="background: #ffcfcf;" onclick="changeTheme('#ffcfcf')"></div>
                 <div class="color-circle" style="background: #b5ead7;" onclick="changeTheme('#b5ead7')"></div>
             </div>
-            <button class="btn" style="background: #ffcccb; margin-top: 10px;" onclick="location.reload()">Sair da Conta</button>
+            <button class="btn" style="background: #ffcccb; margin-top: 15px;" onclick="location.reload()">Sair da Conta</button>
             <button class="btn" onclick="closeModal('configModal')">Fechar</button>
         </div>
     </div>
 
     <script>
+        // Registrar Service Worker simples para habilitar PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGZ1bmN0aW9uKGV2ZW50KSB7IH0pOw==');
+        }
+
         let currentUser = null;
         let userAppData = { title: "Bl Notes", banner: "", theme: "#e2e2ff", items: [] };
         let editingIndex = -1;
@@ -195,9 +197,9 @@
                 const p = document.getElementById('pass-reg').value.trim();
                 const q = document.getElementById('recovery-q').value.trim();
                 if(!u || !e || !p || !q) return alert("Preencha tudo!");
-                if(localStorage.getItem(`user_${u}`)) return alert("Usuário já existe!");
+                if(localStorage.getItem(`user_${u}`)) return alert("Usuário indisponível!");
                 localStorage.setItem(`user_${u}`, JSON.stringify({ pass: p, email: e, recovery: q, data: userAppData }));
-                alert("Conta criada!");
+                alert("Pronto! Agora faça o login.");
                 switchAuth('login');
             } 
             else if(type === 'login') {
@@ -206,14 +208,14 @@
                 const stored = JSON.parse(localStorage.getItem(`user_${u}`));
                 if(stored && stored.pass === p) {
                     currentUser = u; userAppData = stored.data; startApp();
-                } else alert("Erro no login!");
+                } else alert("Usuário ou Senha incorretos!");
             }
             else if(type === 'recover') {
                 const u = document.getElementById('user-rec').value.trim();
                 const q = document.getElementById('answer-rec').value.trim();
                 const stored = JSON.parse(localStorage.getItem(`user_${u}`));
                 if(stored && stored.recovery === q) {
-                    document.getElementById('result-rec').innerText = `Sua senha: ${stored.pass}`;
+                    document.getElementById('result-rec').innerHTML = `Sua senha é: <span style="color:#000">${stored.pass}</span>`;
                 } else alert("Dados incorretos!");
             }
         }
@@ -221,7 +223,7 @@
         function startApp() {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
-            document.getElementById('list-title').value = userAppData.title;
+            document.getElementById('list-title').value = userAppData.title || "Bl Notes";
             changeTheme(userAppData.theme || '#e2e2ff', false);
             if(userAppData.banner) {
                 document.getElementById('bannerImg').src = userAppData.banner;
@@ -250,7 +252,7 @@
                             <span class="tag tag-cat">${m.cat || 'Geral'}</span>
                             <span class="tag tag-status">${m.status || ''}</span>
                             <div class="manga-name">${m.name}</div>
-                            <div style="font-size:0.6rem">Cap: ${m.caps || 0}</div>
+                            <div style="font-size:0.6rem; color:#888;">Cap: ${m.caps || 0}</div>
                         </div>
                     </div>
                 `;
@@ -260,13 +262,13 @@
         function showDetails(i) {
             const m = userAppData.items[i];
             document.getElementById('detailContent').innerHTML = `
-                <img src="${m.img}" style="width:160px; height:240px; object-fit:cover; border-radius:15px; margin-bottom:15px;">
-                <h2>${m.name}</h2>
+                <img src="${m.img}" style="width:170px; height:250px; object-fit:cover; border-radius:20px; margin-bottom:15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
+                <h2 style="margin-bottom:5px; letter-spacing:-0.5px;">${m.name}</h2>
                 <div style="margin: 10px 0;">
-                    <span class="tag tag-cat" style="font-size: 0.8rem; padding: 5px 10px;">${m.cat}</span>
-                    <span class="tag tag-status" style="font-size: 0.8rem; padding: 5px 10px;">${m.status}</span>
+                    <span class="tag tag-cat" style="font-size: 0.75rem; padding: 5px 12px;">${m.cat}</span>
+                    <span class="tag tag-status" style="font-size: 0.75rem; padding: 5px 12px;">${m.status}</span>
                 </div>
-                <p>Capítulos: ${m.caps}</p>
+                <p style="color:#777; font-size: 0.9rem;">Lido até o capítulo: <b>${m.caps}</b></p>
             `;
             document.getElementById('btnVerOnline').onclick = () => window.open(m.link, '_blank');
             document.getElementById('btnEdit').onclick = () => {
@@ -279,14 +281,14 @@
                 closeModal('detailModal'); openModal('mangaModal');
             };
             document.getElementById('btnDelete').onclick = () => {
-                if(confirm("Excluir?")) { userAppData.items.splice(i, 1); renderGrid(); saveData(); closeModal('detailModal'); }
+                if(confirm("Remover da lista?")) { userAppData.items.splice(i, 1); renderGrid(); saveData(); closeModal('detailModal'); }
             };
             openModal('detailModal');
         }
 
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function openAddModal() { editingIndex = -1; document.getElementById('modalTitle').innerText = "Adicionar"; openModal('mangaModal'); }
+        function openAddModal() { editingIndex = -1; document.getElementById('modalTitle').innerText = "Adicionar Mangá"; openModal('mangaModal'); }
 
         function saveManga() {
             const name = document.getElementById('mangaName').value;
@@ -304,7 +306,7 @@
             } else if(editingIndex > -1) {
                 data.img = userAppData.items[editingIndex].img;
                 finishSave(data);
-            } else alert("Selecione uma capa!");
+            } else alert("Selecione uma imagem de capa!");
         }
 
         function finishSave(data) {
