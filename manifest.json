@@ -1,0 +1,20 @@
+{
+  "name": "Bl Notes",
+  "short_name": "Bl Notes",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#fdfbfb",
+  "theme_color": "#e2e2ff",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
