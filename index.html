@@ -65,6 +65,9 @@
             <input type="text" id="user-login" placeholder="Usuário">
             <input type="password" id="pass-login" placeholder="Senha">
             <button class="btn" style="background: var(--primary);" onclick="handleAuth('login')">Entrar</button>
+            
+            <p style="margin-top: 15px; font-size: 0.75rem; color: #888; cursor: pointer;" onclick="forgotPassword()">Esqueci minha senha</p>
+            
             <p style="margin-top: 20px; font-size: 0.8rem;"><span onclick="switchAuth('register')" style="cursor:pointer">Criar conta</span></p>
         </div>
         <div class="auth-box hidden" id="register-box">
