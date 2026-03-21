@@ -21,7 +21,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; overflow-x: hidden; }
 
-        /* Estilos de Interface */
         .app-logo { width: 85px; height: 85px; border-radius: 22px; margin-bottom: 15px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .header-icon { width: 35px; height: 35px; border-radius: 50%; vertical-align: middle; margin-right: 10px; border: 2px solid white; }
         
@@ -30,23 +29,20 @@
         .hidden { display: none !important; }
 
         header { padding: 25px 20px; text-align: center; background: var(--primary); border-radius: 0 0 20px 20px; }
-        .editable-title { font-size: 1.7rem; font-weight: bold; border: none; background: transparent; text-align: center; outline: none; color: #444; }
+        .editable-title { font-size: 1.7rem; font-weight: bold; border: none; background: transparent; text-align: center; outline: none; color: #444; width: 100%; }
 
         .banner-container { width: 92%; height: 150px; margin: 20px auto; border-radius: 18px; background: #ffffff88; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px dashed #00000011; }
         .banner-container img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Grid e Cards */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 15px; }
-        .card { background: var(--card-bg); border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.04); position: relative; touch-action: panto-y; }
+        .card { background: var(--card-bg); border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.04); position: relative; touch-action: pan-y; }
         .card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; pointer-events: none; }
         
-        /* Tags Dinâmicas */
         .tag { font-size: 0.55rem; padding: 3px 6px; border-radius: 6px; font-weight: bold; display: inline-block; margin: 1px; text-transform: uppercase; }
         .tag-cat { background: var(--primary); color: #444; filter: brightness(0.9); }
         .tag-status { background: #fff9c4; color: #856404; }
         .manga-name { font-size: 0.8rem; font-weight: bold; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
 
-        /* Modais */
         .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
         .modal-content { background: white; width: 100%; max-width: 380px; padding: 30px; border-radius: 25px; text-align: center; }
         input { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #eee; border-radius: 12px; outline: none; background: #f9f9f9; }
@@ -113,13 +109,14 @@
                     <div style="display:flex;align-items:center;justify-content:center;height:100%"><i class="fas fa-eye-dropper" style="font-size:12px"></i></div>
                 </div>
             </div>
+            <button class="btn" style="background: #ffcccb;" onclick="location.reload()">Sair da Conta</button>
             <button class="btn" onclick="closeModal('configModal')">Fechar</button>
         </div>
     </div>
 
     <div id="mangaModal" class="modal">
         <div class="modal-content">
-            <h3 id="modalTitle">Obra</h3>
+            <h3 id="modalTitle">Nova Obra</h3>
             <input type="file" id="mangaImgInput" accept="image/*">
             <input type="text" id="mangaName" placeholder="Nome">
             <input type="text" id="mangaCat" placeholder="Tag">
@@ -131,119 +128,19 @@
         </div>
     </div>
 
-    <script>
-        let currentUser = null;
-        let userAppData = { title: "Bl Notes", banner: "", theme: "#e2e2ff", items: [] };
-        let editingIndex = -1;
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div id="detailContent"></div>
+            <button class="btn" id="btnVerOnline" style="background: var(--primary);">Ver Online</button>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn" id="btnEdit" style="flex: 1; background: #eee;">Editar</button>
+                <button class="btn" id="btnDelete" style="flex: 1; background: #ffcccb;">Excluir</button>
+            </div>
+            <button class="btn" onclick="closeModal('detailModal')">Voltar</button>
+        </div>
+    </div>
 
-        // CONFIGURAÇÃO DO ARRASTAR (DRAG & DROP) OTIMIZADA
-        const gridElement = document.getElementById('mangaGrid');
-        new Sortable(gridElement, {
-            animation: 200,
-            delay: 200, // Tempo segurando para começar a mover (evita conflito com scroll)
-            delayOnTouchOnly: true, // O atraso só acontece no celular
-            touchStartThreshold: 5, // Sensibilidade de movimento antes de cancelar o toque
-            onEnd: function() {
-                const newItems = [];
-                document.querySelectorAll('.card').forEach(card => {
-                    newItems.push(userAppData.items[card.dataset.index]);
-                });
-                userAppData.items = newItems;
-                renderGrid();
-                saveData();
-            }
-        });
-
-        function switchAuth(screen) {
-            document.getElementById('login-box').classList.add('hidden');
-            document.getElementById('register-box').classList.add('hidden');
-            document.getElementById(`${screen}-box`).classList.remove('hidden');
-        }
-
-        function handleAuth(type) {
-            if(type === 'register') {
-                const u = document.getElementById('user-reg').value.trim();
-                const p = document.getElementById('pass-reg').value.trim();
-                localStorage.setItem(`user_${u}`, JSON.stringify({ pass: p, data: userAppData }));
-                switchAuth('login');
-            } else {
-                const u = document.getElementById('user-login').value.trim();
-                const p = document.getElementById('pass-login').value.trim();
-                const stored = JSON.parse(localStorage.getItem(`user_${u}`));
-                if(stored && stored.pass === p) { currentUser = u; userAppData = stored.data; startApp(); }
-            }
-        }
-
-        function startApp() {
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
-            changeTheme(userAppData.theme || '#e2e2ff', false);
-            renderGrid();
-        }
-
-        function changeTheme(color, save = true) {
-            document.documentElement.style.setProperty('--primary', color);
-            userAppData.theme = color;
-            if(save) saveData();
-        }
-
-        function renderGrid() {
-            const grid = document.getElementById('mangaGrid');
-            grid.innerHTML = '';
-            userAppData.items.forEach((m, i) => {
-                grid.innerHTML += `
-                    <div class="card" data-index="${i}" onclick="showDetails(${i})">
-                        <img src="${m.img}">
-                        <div class="card-info">
-                            <span class="tag tag-cat">${m.cat}</span>
-                            <span class="tag tag-status">${m.status}</span>
-                            <div class="manga-name">${m.name}</div>
-                            <div style="font-size:0.6rem; color:#888;">Cap: ${m.caps}</div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function saveData() {
-            if(!currentUser) return;
-            userAppData.title = document.getElementById('list-title').value;
-            const acc = JSON.parse(localStorage.getItem(`user_${currentUser}`));
-            acc.data = userAppData;
-            localStorage.setItem(`user_${currentUser}`, JSON.stringify(acc));
-        }
-
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function openAddModal() { editingIndex = -1; openModal('mangaModal'); }
-
-        function saveManga() {
-            const file = document.getElementById('mangaImgInput').files[0];
-            const data = {
-                name: document.getElementById('mangaName').value,
-                cat: document.getElementById('mangaCat').value,
-                status: document.getElementById('mangaStatus').value,
-                caps: document.getElementById('mangaCaps').value,
-                link: document.getElementById('mangaLink').value || "#"
-            };
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = () => { data.img = reader.result; userAppData.items.push(data); renderGrid(); saveData(); closeModal('mangaModal'); };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function loadBanner(event) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                userAppData.banner = reader.result;
-                document.getElementById('bannerImg').src = reader.result;
-                document.getElementById('bannerImg').style.display = 'block';
-                document.getElementById('bannerPlaceholder').style.display = 'none';
-                saveData();
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        }
-    </script>
+    <script src="script.js"></script>
+    <script src="scripts.js"></script>
 </body>
 </html>
