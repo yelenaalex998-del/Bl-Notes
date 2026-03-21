@@ -1,20 +1,33 @@
-let currentUser = null;
+let currentUser = localStorage.getItem('lastUser') || null;
 let userAppData = { title: "Bl Notes", banner: "", theme: "#e2e2ff", items: [] };
 let editingIndex = -1;
 
-// 1. CONFIGURAÇÃO DE ARRASTAR (DRAG & DROP) - COM TOQUE LONGO
+// VERIFICAÇÃO DE LOGIN AUTOMÁTICO AO ABRIR O APP
+window.onload = () => {
+    if (currentUser) {
+        const stored = JSON.parse(localStorage.getItem(`user_${currentUser}`));
+        if (stored) {
+            userAppData = stored.data;
+            startApp();
+        }
+    }
+};
+
+// CONFIGURAÇÃO DE ARRASTAR (DRAG & DROP) MELHORADA
 const gridElement = document.getElementById('mangaGrid');
 if (gridElement) {
     new Sortable(gridElement, {
-        animation: 250,
-        delay: 400, 
-        delayOnTouchOnly: true, 
-        touchStartThreshold: 10,
-        onStart: function() { if (navigator.vibrate) navigator.vibrate(50); },
+        animation: 200,
+        delay: 500, // Meio segundo segurando para não bugar o scroll
+        delayOnTouchOnly: true,
+        touchStartThreshold: 20,
+        forceFallback: true, // Melhora o comportamento em navegadores mobile
+        onStart: function() { if (navigator.vibrate) navigator.vibrate(40); },
         onEnd: function() {
             const newItems = [];
             document.querySelectorAll('.card').forEach(card => {
-                newItems.push(userAppData.items[card.dataset.index]);
+                const idx = card.getAttribute('data-index');
+                newItems.push(userAppData.items[idx]);
             });
             userAppData.items = newItems;
             renderGrid();
@@ -23,20 +36,13 @@ if (gridElement) {
     });
 }
 
-// 2. SISTEMA DE LOGIN, REGISTRO E RECUPERAÇÃO
-function switchAuth(screen) {
-    document.getElementById('login-box').classList.add('hidden');
-    document.getElementById('register-box').classList.add('hidden');
-    document.getElementById(`${screen}-box`).classList.remove('hidden');
-}
-
+// SISTEMA DE AUTH
 function handleAuth(type) {
     if(type === 'register') {
         const u = document.getElementById('user-reg').value.trim();
         const p = document.getElementById('pass-reg').value.trim();
-        const q = document.getElementById('recovery-q').value.trim(); // Pergunta de segurança
-        if(!u || !p || !q) return alert("Preencha todos os campos!");
-        
+        const q = document.getElementById('recovery-q').value.trim();
+        if(!u || !p || !q) return alert("Preencha tudo!");
         localStorage.setItem(`user_${u}`, JSON.stringify({ pass: p, recovery: q, data: userAppData }));
         alert("Conta criada!");
         switchAuth('login');
@@ -44,38 +50,25 @@ function handleAuth(type) {
         const u = document.getElementById('user-login').value.trim();
         const p = document.getElementById('pass-login').value.trim();
         const stored = JSON.parse(localStorage.getItem(`user_${u}`));
-        
         if(stored && stored.pass === p) { 
             currentUser = u; 
+            localStorage.setItem('lastUser', u); // Salva que você logou
             userAppData = stored.data; 
             startApp(); 
-        } else {
-            alert("Usuário ou senha incorretos!");
-        }
+        } else { alert("Erro no login!"); }
     }
 }
 
-// FUNÇÃO DE ESQUECI A SENHA
-function forgotPassword() {
-    const u = prompt("Digite seu nome de usuário:");
-    const stored = JSON.parse(localStorage.getItem(`user_${u}`));
-    if(!stored) return alert("Usuário não encontrado!");
-    
-    const ans = prompt(`Pergunta de segurança: ${stored.recovery}`);
-    if(ans === stored.recovery) {
-        alert(`Sua senha é: ${stored.pass}`);
-    } else {
-        alert("Resposta incorreta!");
-    }
+function logout() {
+    localStorage.removeItem('lastUser');
+    location.reload();
 }
 
-// 3. INICIALIZAÇÃO E BANNER
 function startApp() {
-    document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('app-content').style.display = 'block';
+    document.getElementById('auth-screen').classList.add('hidden');
+    document.getElementById('app-content').classList.remove('hidden');
     document.getElementById('list-title').value = userAppData.title || "Bl Notes";
     
-    // CARREGA O BANNER SALVO
     if(userAppData.banner) {
         const img = document.getElementById('bannerImg');
         img.src = userAppData.banner;
@@ -87,23 +80,11 @@ function startApp() {
     renderGrid();
 }
 
-function loadBanner(event) {
-    const reader = new FileReader();
-    reader.onload = () => {
-        userAppData.banner = reader.result; // Salva na memória do app
-        const img = document.getElementById('bannerImg');
-        img.src = reader.result;
-        img.style.display = 'block';
-        document.getElementById('bannerPlaceholder').style.display = 'none';
-        saveData(); // Salva no banco
-    };
-    reader.readAsDataURL(event.target.files[0]);
-}
-
-// 4. RESTANTE DAS FUNÇÕES (CORES, GRID, MODAIS)
 function changeTheme(color, save = true) {
+    if(!color.startsWith('#')) color = '#' + color; // Garante o #
     document.documentElement.style.setProperty('--primary', color);
     userAppData.theme = color;
+    document.getElementById('hexColorInput').value = color.toUpperCase();
     if(save) saveData();
     const circle = document.getElementById('customColorCircle');
     if(circle) circle.style.background = color;
@@ -132,8 +113,17 @@ function saveData() {
     if(!currentUser) return;
     userAppData.title = document.getElementById('list-title').value;
     const acc = JSON.parse(localStorage.getItem(`user_${currentUser}`));
-    acc.data = userAppData;
-    localStorage.setItem(`user_${currentUser}`, JSON.stringify(acc));
+    if(acc) {
+        acc.data = userAppData;
+        localStorage.setItem(`user_${currentUser}`, JSON.stringify(acc));
+    }
+}
+
+// RESTANTE DAS FUNÇÕES (MESMA COISA)
+function switchAuth(screen) {
+    document.getElementById('login-box').classList.add('hidden');
+    document.getElementById('register-box').classList.add('hidden');
+    document.getElementById(`${screen}-box`).classList.remove('hidden');
 }
 
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
@@ -149,19 +139,20 @@ function saveManga() {
         caps: document.getElementById('mangaCaps').value,
         link: document.getElementById('mangaLink').value || "#"
     };
+    
+    const finalize = (imgData) => {
+        if(imgData) data.img = imgData;
+        if(editingIndex > -1) userAppData.items[editingIndex] = data;
+        else userAppData.items.push(data);
+        renderGrid(); saveData(); closeModal('mangaModal');
+    };
+
     if(file) {
         const reader = new FileReader();
-        reader.onload = () => { 
-            data.img = reader.result; 
-            if(editingIndex > -1) userAppData.items[editingIndex] = data;
-            else userAppData.items.push(data);
-            renderGrid(); saveData(); closeModal('mangaModal'); 
-        };
+        reader.onload = () => finalize(reader.result);
         reader.readAsDataURL(file);
-    } else if(editingIndex > -1) {
-        data.img = userAppData.items[editingIndex].img;
-        userAppData.items[editingIndex] = data;
-        renderGrid(); saveData(); closeModal('mangaModal');
+    } else {
+        finalize(editingIndex > -1 ? userAppData.items[editingIndex].img : "https://via.placeholder.com/150");
     }
 }
 
@@ -186,4 +177,25 @@ function showDetails(i) {
         if(confirm("Excluir?")) { userAppData.items.splice(i, 1); renderGrid(); saveData(); closeModal('detailModal'); }
     };
     openModal('detailModal');
+}
+
+function loadBanner(event) {
+    const reader = new FileReader();
+    reader.onload = () => {
+        userAppData.banner = reader.result;
+        document.getElementById('bannerImg').src = reader.result;
+        document.getElementById('bannerImg').style.display = 'block';
+        document.getElementById('bannerPlaceholder').style.display = 'none';
+        saveData();
+    };
+    reader.readAsDataURL(event.target.files[0]);
+}
+
+function forgotPassword() {
+    const u = prompt("Usuário:");
+    const stored = JSON.parse(localStorage.getItem(`user_${u}`));
+    if(!stored) return alert("Não achei!");
+    const ans = prompt(`Segurança: ${stored.recovery}`);
+    if(ans === stored.recovery) alert(`Senha: ${stored.pass}`);
+    else alert("Errado!");
 }
