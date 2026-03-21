@@ -17,60 +17,47 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     
     <style>
-        :root {
-            --primary: #e2e2ff; --accent: #b5ead7; --bg: #fdfbfb;
-            --card-bg: #ffffff; --text: #555;
-        }
-
+        :root { --primary: #e2e2ff; --bg: #fdfbfb; --card-bg: #ffffff; --text: #555; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; overflow-x: hidden; }
 
+        /* Estilos de Interface */
         .app-logo { width: 85px; height: 85px; border-radius: 22px; margin-bottom: 15px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .header-icon { width: 35px; height: 35px; border-radius: 50%; vertical-align: middle; margin-right: 10px; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-
+        .header-icon { width: 35px; height: 35px; border-radius: 50%; vertical-align: middle; margin-right: 10px; border: 2px solid white; }
+        
         #auth-screen { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--primary); z-index: 2000; display: flex; align-items: center; justify-content: center; }
         .auth-box { background: white; padding: 30px; border-radius: 25px; width: 88%; max-width: 360px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
         .hidden { display: none !important; }
 
-        #app-content { display: none; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        header { padding: 25px 20px; text-align: center; background: var(--primary); border-radius: 0 0 20px 20px; }
+        .editable-title { font-size: 1.7rem; font-weight: bold; border: none; background: transparent; text-align: center; outline: none; color: #444; }
 
-        header { padding: 25px 20px; text-align: center; background: var(--primary); transition: 0.3s; border-radius: 0 0 20px 20px; }
-        .editable-title { font-size: 1.7rem; font-weight: bold; border: none; background: transparent; text-align: center; outline: none; color: #444; width: auto; max-width: 200px; }
-
-        .banner-container {
-            width: 92%; height: 150px; margin: 20px auto; border-radius: 18px;
-            background: #ffffff88; overflow: hidden; position: relative; border: 2px dashed #00000011;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-        }
+        .banner-container { width: 92%; height: 150px; margin: 20px auto; border-radius: 18px; background: #ffffff88; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px dashed #00000011; }
         .banner-container img { width: 100%; height: 100%; object-fit: cover; }
 
+        /* Grid e Cards */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 15px; }
-        .card { background: var(--card-bg); border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.04); cursor: grab; }
-        .card:active { cursor: grabbing; }
+        .card { background: var(--card-bg); border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.04); position: relative; touch-action: panto-y; }
         .card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; pointer-events: none; }
-        .card-info { padding: 8px 4px; text-align: center; }
         
-        /* Tags agora usam a cor --primary do painel */
+        /* Tags Dinâmicas */
         .tag { font-size: 0.55rem; padding: 3px 6px; border-radius: 6px; font-weight: bold; display: inline-block; margin: 1px; text-transform: uppercase; }
         .tag-cat { background: var(--primary); color: #444; filter: brightness(0.9); }
         .tag-status { background: #fff9c4; color: #856404; }
-        .manga-name { font-size: 0.8rem; font-weight: bold; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #333; }
+        .manga-name { font-size: 0.8rem; font-weight: bold; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
 
+        /* Modais */
         .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
-        .modal-content { background: white; width: 100%; max-width: 380px; padding: 30px; border-radius: 25px; max-height: 85vh; overflow-y: auto; text-align: center; }
-        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #eee; border-radius: 12px; font-size: 16px; background: #f9f9f9; outline: none; }
-        
-        .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        
+        .modal-content { background: white; width: 100%; max-width: 380px; padding: 30px; border-radius: 25px; text-align: center; }
+        input { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #eee; border-radius: 12px; outline: none; background: #f9f9f9; }
+        .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: bold; margin-top: 10px; cursor: pointer; }
+
         .fab { position: fixed; bottom: 25px; right: 25px; width: 65px; height: 65px; border-radius: 50%; background: var(--primary); filter: brightness(0.9); border: none; font-size: 26px; z-index: 100; box-shadow: 0 8px 20px rgba(0,0,0,0.15); color: #444; }
         .config-btn { position: fixed; bottom: 25px; left: 25px; width: 55px; height: 55px; border-radius: 50%; background: #fff; border: none; z-index: 100; color: #888; font-size: 22px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 
-        /* Estilo da Paleta Customizada */
-        .color-palette { display: flex; justify-content: center; gap: 10px; margin: 20px 0; flex-wrap: wrap; }
+        .color-palette { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
         .color-circle { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 2px solid #eee; position: relative; }
         .custom-color-input { position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
-        .custom-picker-icon { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 14px; color: #888; }
     </style>
 </head>
 <body>
@@ -78,29 +65,27 @@
     <div id="auth-screen">
         <div class="auth-box" id="login-box">
             <img src="icon.png" class="app-logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3652/3652191.png'">
-            <h1 style="margin-bottom: 20px;">Bl Notes</h1>
+            <h1>Bl Notes</h1>
             <input type="text" id="user-login" placeholder="Usuário">
             <input type="password" id="pass-login" placeholder="Senha">
             <button class="btn" style="background: var(--primary);" onclick="handleAuth('login')">Entrar</button>
-            <p style="margin-top: 20px; font-size: 0.85rem;"><span onclick="switchAuth('register')" style="cursor:pointer">Criar conta</span></p>
+            <p style="margin-top: 20px; font-size: 0.8rem;"><span onclick="switchAuth('register')" style="cursor:pointer">Criar conta</span></p>
         </div>
-
         <div class="auth-box hidden" id="register-box">
             <h2>Nova Conta</h2>
             <input type="text" id="user-reg" placeholder="Usuário">
-            <input type="email" id="email-reg" placeholder="E-mail">
             <input type="password" id="pass-reg" placeholder="Senha">
-            <input type="text" id="recovery-q" placeholder="Nome da sua mascote?">
+            <input type="text" id="recovery-q" placeholder="Nome da mascote?">
             <button class="btn" style="background: var(--primary);" onclick="handleAuth('register')">Cadastrar</button>
             <p onclick="switchAuth('login')" style="margin-top:15px; cursor:pointer; font-size:0.8rem;">Voltar</p>
         </div>
     </div>
 
     <div id="app-content">
-        <header id="appHeader">
+        <header>
             <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
                 <img src="icon.png" class="header-icon" onerror="this.style.display='none'">
-                <input type="text" id="list-title" class="editable-title" oninput="saveData()">
+                <input type="text" id="list-title" class="editable-title" oninput="saveData()" value="Bl Notes">
             </div>
             <div class="banner-container" onclick="document.getElementById('bannerInput').click()">
                 <img id="bannerImg" src="" style="display:none;">
@@ -115,20 +100,6 @@
         <button class="config-btn" onclick="openModal('configModal')"><i class="fas fa-palette"></i></button>
     </div>
 
-    <div id="mangaModal" class="modal">
-        <div class="modal-content">
-            <h3 id="modalTitle">Nova Obra</h3>
-            <input type="file" id="mangaImgInput" accept="image/*">
-            <input type="text" id="mangaName" placeholder="Nome">
-            <input type="text" id="mangaCat" placeholder="Tag (Ex: Vampirinho)">
-            <input type="text" id="mangaStatus" placeholder="Status (Ex: Hiatus)">
-            <input type="number" id="mangaCaps" placeholder="Capítulo">
-            <input type="url" id="mangaLink" placeholder="Link">
-            <button class="btn" style="background: var(--primary);" onclick="saveManga()">Salvar</button>
-            <button class="btn" onclick="closeModal('mangaModal')">Cancelar</button>
-        </div>
-    </div>
-
     <div id="configModal" class="modal">
         <div class="modal-content">
             <h3>Tema & Cores</h3>
@@ -138,24 +109,25 @@
                 <div class="color-circle" style="background: #d1f2ff;" onclick="changeTheme('#d1f2ff')"></div>
                 <div class="color-circle" style="background: #b5ead7;" onclick="changeTheme('#b5ead7')"></div>
                 <div class="color-circle" id="customColorCircle">
-                    <div class="custom-picker-icon"><i class="fas fa-eye-dropper"></i></div>
                     <input type="color" class="custom-color-input" oninput="changeTheme(this.value)">
+                    <div style="display:flex;align-items:center;justify-content:center;height:100%"><i class="fas fa-eye-dropper" style="font-size:12px"></i></div>
                 </div>
             </div>
-            <button class="btn" style="background: #ffcccb;" onclick="location.reload()">Sair</button>
             <button class="btn" onclick="closeModal('configModal')">Fechar</button>
         </div>
     </div>
 
-    <div id="detailModal" class="modal">
+    <div id="mangaModal" class="modal">
         <div class="modal-content">
-            <div id="detailContent"></div>
-            <button class="btn" id="btnVerOnline" style="background: var(--primary);">Ver Online</button>
-            <div style="display: flex; gap: 8px;">
-                <button class="btn" id="btnEdit" style="flex: 1; background: #eee;">Editar</button>
-                <button class="btn" id="btnDelete" style="flex: 1; background: #ffcccb;">Excluir</button>
-            </div>
-            <button class="btn" onclick="closeModal('detailModal')">Voltar</button>
+            <h3 id="modalTitle">Obra</h3>
+            <input type="file" id="mangaImgInput" accept="image/*">
+            <input type="text" id="mangaName" placeholder="Nome">
+            <input type="text" id="mangaCat" placeholder="Tag">
+            <input type="text" id="mangaStatus" placeholder="Status">
+            <input type="number" id="mangaCaps" placeholder="Capítulo">
+            <input type="url" id="mangaLink" placeholder="Link">
+            <button class="btn" style="background: var(--primary);" onclick="saveManga()">Salvar</button>
+            <button class="btn" onclick="closeModal('mangaModal')">Cancelar</button>
         </div>
     </div>
 
@@ -164,24 +136,23 @@
         let userAppData = { title: "Bl Notes", banner: "", theme: "#e2e2ff", items: [] };
         let editingIndex = -1;
 
-        // Inicializar Drag and Drop
+        // CONFIGURAÇÃO DO ARRASTAR (DRAG & DROP) OTIMIZADA
         const gridElement = document.getElementById('mangaGrid');
         new Sortable(gridElement, {
-            animation: 150,
+            animation: 200,
+            delay: 200, // Tempo segurando para começar a mover (evita conflito com scroll)
+            delayOnTouchOnly: true, // O atraso só acontece no celular
+            touchStartThreshold: 5, // Sensibilidade de movimento antes de cancelar o toque
             onEnd: function() {
-                reorderItems();
+                const newItems = [];
+                document.querySelectorAll('.card').forEach(card => {
+                    newItems.push(userAppData.items[card.dataset.index]);
+                });
+                userAppData.items = newItems;
+                renderGrid();
+                saveData();
             }
         });
-
-        function reorderItems() {
-            const newOrder = [];
-            document.querySelectorAll('.card').forEach(card => {
-                newOrder.push(userAppData.items[card.dataset.index]);
-            });
-            userAppData.items = newOrder;
-            renderGrid();
-            saveData();
-        }
 
         function switchAuth(screen) {
             document.getElementById('login-box').classList.add('hidden');
@@ -193,29 +164,20 @@
             if(type === 'register') {
                 const u = document.getElementById('user-reg').value.trim();
                 const p = document.getElementById('pass-reg').value.trim();
-                if(!u || !p) return alert("Preencha tudo!");
-                localStorage.setItem(`user_${u}`, JSON.stringify({ pass: p, recovery: document.getElementById('recovery-q').value, data: userAppData }));
-                alert("Criado!"); switchAuth('login');
+                localStorage.setItem(`user_${u}`, JSON.stringify({ pass: p, data: userAppData }));
+                switchAuth('login');
             } else {
                 const u = document.getElementById('user-login').value.trim();
                 const p = document.getElementById('pass-login').value.trim();
                 const stored = JSON.parse(localStorage.getItem(`user_${u}`));
-                if(stored && stored.pass === p) {
-                    currentUser = u; userAppData = stored.data; startApp();
-                } else alert("Erro!");
+                if(stored && stored.pass === p) { currentUser = u; userAppData = stored.data; startApp(); }
             }
         }
 
         function startApp() {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
-            document.getElementById('list-title').value = userAppData.title || "Bl Notes";
             changeTheme(userAppData.theme || '#e2e2ff', false);
-            if(userAppData.banner) {
-                document.getElementById('bannerImg').src = userAppData.banner;
-                document.getElementById('bannerImg').style.display = 'block';
-                document.getElementById('bannerPlaceholder').style.display = 'none';
-            }
             renderGrid();
         }
 
@@ -223,8 +185,6 @@
             document.documentElement.style.setProperty('--primary', color);
             userAppData.theme = color;
             if(save) saveData();
-            // Atualiza a cor do seletor visualmente
-            document.getElementById('customColorCircle').style.background = color;
         }
 
         function renderGrid() {
@@ -245,33 +205,6 @@
             });
         }
 
-        function showDetails(i) {
-            const m = userAppData.items[i];
-            document.getElementById('detailContent').innerHTML = `
-                <img src="${m.img}" style="width:170px; height:250px; object-fit:cover; border-radius:20px; margin-bottom:15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
-                <h2>${m.name}</h2>
-                <div style="margin: 10px 0;">
-                    <span class="tag tag-cat" style="font-size:0.8rem; padding: 5px 12px;">${m.cat}</span>
-                    <span class="tag tag-status" style="font-size:0.8rem; padding: 5px 12px;">${m.status}</span>
-                </div>
-                <p>Capítulo: ${m.caps}</p>
-            `;
-            document.getElementById('btnVerOnline').onclick = () => window.open(m.link, '_blank');
-            document.getElementById('btnEdit').onclick = () => {
-                editingIndex = i;
-                document.getElementById('mangaName').value = m.name;
-                document.getElementById('mangaCat').value = m.cat;
-                document.getElementById('mangaStatus').value = m.status;
-                document.getElementById('mangaCaps').value = m.caps;
-                document.getElementById('mangaLink').value = m.link;
-                closeModal('detailModal'); openModal('mangaModal');
-            };
-            document.getElementById('btnDelete').onclick = () => {
-                if(confirm("Excluir?")) { userAppData.items.splice(i, 1); renderGrid(); saveData(); closeModal('detailModal'); }
-            };
-            openModal('detailModal');
-        }
-
         function saveData() {
             if(!currentUser) return;
             userAppData.title = document.getElementById('list-title').value;
@@ -282,7 +215,7 @@
 
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function openAddModal() { editingIndex = -1; document.getElementById('modalTitle').innerText = "Adicionar"; openModal('mangaModal'); }
+        function openAddModal() { editingIndex = -1; openModal('mangaModal'); }
 
         function saveManga() {
             const file = document.getElementById('mangaImgInput').files[0];
@@ -295,17 +228,9 @@
             };
             if(file) {
                 const reader = new FileReader();
-                reader.onload = () => { data.img = reader.result; finishSave(data); };
+                reader.onload = () => { data.img = reader.result; userAppData.items.push(data); renderGrid(); saveData(); closeModal('mangaModal'); };
                 reader.readAsDataURL(file);
-            } else if(editingIndex > -1) {
-                data.img = userAppData.items[editingIndex].img; finishSave(data);
-            } else alert("Selecione uma imagem!");
-        }
-
-        function finishSave(data) {
-            if(editingIndex > -1) userAppData.items[editingIndex] = data;
-            else userAppData.items.push(data);
-            renderGrid(); saveData(); closeModal('mangaModal');
+            }
         }
 
         function loadBanner(event) {
