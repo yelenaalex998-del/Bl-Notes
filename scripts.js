@@ -13,7 +13,7 @@ window.onload = () => {
     }
 };
 
-// SISTEMA DE AUTH (VERSÃO SEGURA)
+// SISTEMA DE AUTH
 function handleAuth(type) {
     if(type === 'register') {
         const u = document.getElementById('user-reg').value.trim();
@@ -72,7 +72,6 @@ function exportToPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    // Estética do PDF
     doc.setFontSize(18);
     doc.setTextColor(68, 68, 68);
     doc.text(userAppData.title || "Minha Lista de BLs", 14, 20);
@@ -179,7 +178,7 @@ function saveManga() {
         name: name,
         cat: document.getElementById('mangaCat').value || "Geral",
         status: document.getElementById('mangaStatus').value || "Lendo",
-        caps: document.getElementById('mangaCaps').value || "0",
+        caps: document.getElementById('mangaCaps').value || "0", // Aceita qualquer texto
         link: document.getElementById('mangaLink').value || "#",
         img: (editingIndex > -1) ? userAppData.items[editingIndex].img : "https://via.placeholder.com/150"
     };
