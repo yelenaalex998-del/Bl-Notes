@@ -13,7 +13,7 @@ window.onload = () => {
     }
 };
 
-// SISTEMA DE AUTH (VERSÃO CONSERTADA)
+// SISTEMA DE AUTH (VERSÃO SEGURA)
 function handleAuth(type) {
     if(type === 'register') {
         const u = document.getElementById('user-reg').value.trim();
@@ -22,7 +22,6 @@ function handleAuth(type) {
         
         if(!u || !p || !q) return alert("Preencha todos os campos!");
 
-        // BUSCA DADOS ANTIGOS: Se o usuário já existia, mantém os itens/cards dele
         const existingAccount = JSON.parse(localStorage.getItem(`user_${u}`));
         const dataToKeep = existingAccount ? existingAccount.data : { title: "Bl Notes", banner: "", theme: "#e2e2ff", items: [] };
 
@@ -32,7 +31,7 @@ function handleAuth(type) {
             data: dataToKeep 
         }));
         
-        alert("Conta atualizada/criada com sucesso!");
+        alert("Conta atualizada/criada!");
         switchAuth('login');
     } else {
         const u = document.getElementById('user-login').value.trim();
@@ -62,6 +61,36 @@ function startApp() {
     }
     changeTheme(userAppData.theme || '#e2e2ff', false);
     renderGrid();
+}
+
+// BACKUP: SALVAR
+function exportBackup() {
+    if (!currentUser) return alert("Faça login primeiro!");
+    const dataStr = JSON.stringify(userAppData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', `backup_blnotes_${currentUser}.json`);
+    linkElement.click();
+}
+
+// BACKUP: RESTAURAR
+function importBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            if (importedData.items && Array.isArray(importedData.items)) {
+                userAppData = importedData;
+                renderGrid(); saveData(); startApp();
+                alert("Backup restaurado!");
+                closeModal('configModal');
+            } else { alert("Arquivo inválido!"); }
+        } catch (err) { alert("Erro ao ler ficheiro!"); }
+    };
+    reader.readAsText(file);
 }
 
 // SALVAMENTO E CORES
@@ -108,7 +137,7 @@ function saveManga() {
     if(!name) return alert("Nome obrigatório!");
     const data = {
         name: name,
-        cat: document.getElementById('mangaCat').value || "Manga",
+        cat: document.getElementById('mangaCat').value || "Geral",
         status: document.getElementById('mangaStatus').value || "Lendo",
         caps: document.getElementById('mangaCaps').value || "0",
         link: document.getElementById('mangaLink').value || "#",
