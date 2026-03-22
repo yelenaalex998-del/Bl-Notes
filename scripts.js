@@ -13,26 +13,40 @@ window.onload = () => {
     }
 };
 
-// SISTEMA DE AUTH
+// SISTEMA DE AUTH (VERSÃO CONSERTADA)
 function handleAuth(type) {
     if(type === 'register') {
         const u = document.getElementById('user-reg').value.trim();
         const p = document.getElementById('pass-reg').value.trim();
         const q = document.getElementById('recovery-q').value.trim();
-        if(!u || !p || !q) return alert("Preencha tudo!");
-        localStorage.setItem(`user_${u}`, JSON.stringify({ pass: p, recovery: q, data: { title: "Bl Notes", banner: "", theme: "#e2e2ff", items: [] } }));
-        alert("Conta criada!");
+        
+        if(!u || !p || !q) return alert("Preencha todos os campos!");
+
+        // BUSCA DADOS ANTIGOS: Se o usuário já existia, mantém os itens/cards dele
+        const existingAccount = JSON.parse(localStorage.getItem(`user_${u}`));
+        const dataToKeep = existingAccount ? existingAccount.data : { title: "Bl Notes", banner: "", theme: "#e2e2ff", items: [] };
+
+        localStorage.setItem(`user_${u}`, JSON.stringify({ 
+            pass: p, 
+            recovery: q, 
+            data: dataToKeep 
+        }));
+        
+        alert("Conta atualizada/criada com sucesso!");
         switchAuth('login');
     } else {
         const u = document.getElementById('user-login').value.trim();
         const p = document.getElementById('pass-login').value.trim();
         const stored = JSON.parse(localStorage.getItem(`user_${u}`));
+        
         if(stored && stored.pass === p) { 
             currentUser = u; 
             localStorage.setItem('lastUser', u);
             userAppData = stored.data; 
             startApp(); 
-        } else { alert("Usuário ou senha incorretos!"); }
+        } else {
+            alert("Usuário ou senha incorretos!");
+        }
     }
 }
 
@@ -114,7 +128,7 @@ function finalizeSave(data) {
     renderGrid(); saveData(); closeModal('mangaModal');
 }
 
-// FUNÇÕES AUXILIARES
+// ARRASTAR CARDS
 const gridElementSort = document.getElementById('mangaGrid');
 if (gridElementSort) {
     new Sortable(gridElementSort, {
@@ -143,11 +157,13 @@ function showDetails(i) {
     editingIndex = i;
     const m = userAppData.items[i];
     document.getElementById('detailContent').innerHTML = `
-        <img src="${m.img}" style="width:170px; height:250px; object-fit:cover; border-radius:20px;">
+        <img src="${m.img}" style="width:170px; height:250px; object-fit:cover; border-radius:20px; margin-bottom:10px;">
         <h2>${m.name}</h2><p>Capítulo: ${m.caps}</p>`;
     document.getElementById('btnVerOnline').onclick = () => window.open(m.link, '_blank');
     document.getElementById('btnEdit').onclick = () => {
         document.getElementById('mangaName').value = m.name;
+        document.getElementById('mangaCat').value = m.cat;
+        document.getElementById('mangaStatus').value = m.status;
         document.getElementById('mangaCaps').value = m.caps;
         document.getElementById('mangaLink').value = m.link;
         closeModal('detailModal'); openModal('mangaModal');
