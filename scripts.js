@@ -63,6 +63,46 @@ function startApp() {
     renderGrid();
 }
 
+// PDF: EXPORTAR LISTA EM TABELA CLICÁVEL
+function exportToPDF() {
+    if (!userAppData.items || userAppData.items.length === 0) {
+        return alert("Sua lista está vazia!");
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Estética do PDF
+    doc.setFontSize(18);
+    doc.setTextColor(68, 68, 68);
+    doc.text(userAppData.title || "Minha Lista de BLs", 14, 20);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Gerado em: ${new Date().toLocaleDateString()}`, 14, 28);
+
+    const tableRows = [];
+    userAppData.items.forEach(m => {
+        tableRows.push([m.name, m.cat, m.status, m.caps, m.link]);
+    });
+
+    doc.autoTable({
+        startY: 35,
+        head: [['Nome', 'Tag', 'Status', 'Cap.', 'Link (Clicável)']],
+        body: tableRows,
+        headStyles: { fillColor: [226, 226, 255], textColor: [68, 68, 68], fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 3 },
+        didDrawCell: (data) => {
+            if (data.column.index === 4 && data.cell.section === 'body' && data.cell.text[0] !== '#') {
+                doc.link(data.cell.x, data.cell.y, data.cell.width, data.cell.height, { url: data.cell.text[0] });
+                doc.setTextColor(0, 0, 255); 
+            }
+        }
+    });
+
+    doc.save(`lista_blnotes_${currentUser}.pdf`);
+}
+
 // BACKUP: SALVAR
 function exportBackup() {
     if (!currentUser) return alert("Faça login primeiro!");

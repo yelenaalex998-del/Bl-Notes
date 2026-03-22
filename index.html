@@ -14,7 +14,10 @@
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
     <style>
         :root { --primary: #e2e2ff; --bg: #fdfbfb; --card-bg: #ffffff; --text: #555; }
@@ -112,12 +115,16 @@
             </div>
             <input type="text" id="hexColorInput" placeholder="#HEXADECIMAL" style="text-align: center; text-transform: uppercase;" onchange="changeTheme(this.value)">
             
-            <h3 style="margin-top: 20px;">Backup dos Dados</h3>
+            <h3 style="margin-top: 20px;">Backup & PDF</h3>
             <div style="display: flex; gap: 8px;">
                 <button class="btn" style="background: #b5ead7; flex: 1;" onclick="exportBackup()"><i class="fas fa-download"></i> Salvar</button>
                 <button class="btn" style="background: #d1f2ff; flex: 1;" onclick="document.getElementById('importFile').click()"><i class="fas fa-upload"></i> Restaurar</button>
             </div>
             <input type="file" id="importFile" hidden accept=".json" onchange="importBackup(event)">
+
+            <button class="btn" style="background: #eee; margin-top: 10px;" onclick="exportToPDF()">
+                <i class="fas fa-file-pdf"></i> Exportar Lista em PDF
+            </button>
 
             <button class="btn" style="background: #ffcccb; margin-top: 20px;" onclick="logout()">Sair da Conta</button>
             <button class="btn" onclick="closeModal('configModal')">Fechar</button>
