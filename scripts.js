@@ -19,33 +19,20 @@ function handleAuth(type) {
         const u = document.getElementById('user-reg').value.trim();
         const p = document.getElementById('pass-reg').value.trim();
         const q = document.getElementById('recovery-q').value.trim();
-        
         if(!u || !p || !q) return alert("Preencha todos os campos!");
-
-        const existingAccount = JSON.parse(localStorage.getItem(`user_${u}`));
-        const dataToKeep = existingAccount ? existingAccount.data : { title: "Bl Notes", banner: "", theme: "#e2e2ff", items: [] };
-
-        localStorage.setItem(`user_${u}`, JSON.stringify({ 
-            pass: p, 
-            recovery: q, 
-            data: dataToKeep 
-        }));
-        
-        alert("Conta atualizada/criada!");
+        localStorage.setItem(`user_${u}`, JSON.stringify({ pass: p, recovery: q, data: { title: "Bl Notes", banner: "", theme: "#e2e2ff", items: [] } }));
+        alert("Conta criada!");
         switchAuth('login');
     } else {
         const u = document.getElementById('user-login').value.trim();
         const p = document.getElementById('pass-login').value.trim();
         const stored = JSON.parse(localStorage.getItem(`user_${u}`));
-        
         if(stored && stored.pass === p) { 
             currentUser = u; 
             localStorage.setItem('lastUser', u);
             userAppData = stored.data; 
             startApp(); 
-        } else {
-            alert("Usuário ou senha incorretos!");
-        }
+        } else { alert("Usuário ou senha incorretos!"); }
     }
 }
 
@@ -63,76 +50,6 @@ function startApp() {
     renderGrid();
 }
 
-// PDF: EXPORTAR LISTA EM TABELA CLICÁVEL
-function exportToPDF() {
-    if (!userAppData.items || userAppData.items.length === 0) {
-        return alert("Sua lista está vazia!");
-    }
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    doc.setFontSize(18);
-    doc.setTextColor(68, 68, 68);
-    doc.text(userAppData.title || "Minha Lista de BLs", 14, 20);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Gerado em: ${new Date().toLocaleDateString()}`, 14, 28);
-
-    const tableRows = [];
-    userAppData.items.forEach(m => {
-        tableRows.push([m.name, m.cat, m.status, m.caps, m.link]);
-    });
-
-    doc.autoTable({
-        startY: 35,
-        head: [['Nome', 'Tag', 'Status', 'Cap.', 'Link (Clicável)']],
-        body: tableRows,
-        headStyles: { fillColor: [226, 226, 255], textColor: [68, 68, 68], fontStyle: 'bold' },
-        styles: { fontSize: 9, cellPadding: 3 },
-        didDrawCell: (data) => {
-            if (data.column.index === 4 && data.cell.section === 'body' && data.cell.text[0] !== '#') {
-                doc.link(data.cell.x, data.cell.y, data.cell.width, data.cell.height, { url: data.cell.text[0] });
-                doc.setTextColor(0, 0, 255); 
-            }
-        }
-    });
-
-    doc.save(`lista_blnotes_${currentUser}.pdf`);
-}
-
-// BACKUP: SALVAR
-function exportBackup() {
-    if (!currentUser) return alert("Faça login primeiro!");
-    const dataStr = JSON.stringify(userAppData, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', `backup_blnotes_${currentUser}.json`);
-    linkElement.click();
-}
-
-// BACKUP: RESTAURAR
-function importBackup(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const importedData = JSON.parse(e.target.result);
-            if (importedData.items && Array.isArray(importedData.items)) {
-                userAppData = importedData;
-                renderGrid(); saveData(); startApp();
-                alert("Backup restaurado!");
-                closeModal('configModal');
-            } else { alert("Arquivo inválido!"); }
-        } catch (err) { alert("Erro ao ler ficheiro!"); }
-    };
-    reader.readAsText(file);
-}
-
-// SALVAMENTO E CORES
 function saveData() {
     if(!currentUser) return;
     userAppData.title = document.getElementById('list-title').value;
@@ -143,15 +60,6 @@ function saveData() {
     }
 }
 
-function changeTheme(color, save = true) {
-    if(!color.startsWith('#')) color = '#' + color;
-    document.documentElement.style.setProperty('--primary', color);
-    userAppData.theme = color;
-    const input = document.getElementById('hexColorInput');
-    if(input) input.value = color.toUpperCase();
-    if(save) saveData();
-}
-
 function renderGrid() {
     const grid = document.getElementById('mangaGrid');
     if(!grid) return;
@@ -160,34 +68,49 @@ function renderGrid() {
         grid.innerHTML += `
             <div class="card" data-index="${i}" onclick="showDetails(${i})">
                 <img src="${m.img}">
-                <div class="card-info">
+                <div style="padding: 5px;">
                     <span class="tag tag-cat">${m.cat}</span>
                     <span class="tag tag-status">${m.status}</span>
                     <div class="manga-name">${m.name}</div>
-                    <div style="font-size:0.6rem; color:#888; padding: 4px;">Cap: ${m.caps}</div>
+                    <div style="font-size:0.6rem; color:#888;">Cap: ${m.caps}</div>
                 </div>
             </div>`;
     });
 }
 
-// MANIPULAÇÃO DE MANGÁS
+// === AQUI ESTÁ A CORREÇÃO DA IMAGEM ===
 function saveManga() {
     const name = document.getElementById('mangaName').value;
     if(!name) return alert("Nome obrigatório!");
+
+    // 1. Pega a imagem que já existe se estiver editando, ou um placeholder se for novo
+    let imgFinal = (editingIndex > -1) ? userAppData.items[editingIndex].img : "https://via.placeholder.com/150";
+
     const data = {
         name: name,
         cat: document.getElementById('mangaCat').value || "Geral",
         status: document.getElementById('mangaStatus').value || "Lendo",
-        caps: document.getElementById('mangaCaps').value || "0", // Aceita qualquer texto
+        caps: document.getElementById('mangaCaps').value || "0",
         link: document.getElementById('mangaLink').value || "#",
-        img: (editingIndex > -1) ? userAppData.items[editingIndex].img : "https://via.placeholder.com/150"
+        img: imgFinal // Mantém a imagem atual por padrão
     };
-    const file = document.getElementById('mangaImgInput').files[0];
+
+    const fileInput = document.getElementById('mangaImgInput');
+    const file = fileInput.files[0];
+
     if(file) {
+        // Se você escolheu um arquivo NOVO, aí sim ele troca a imagem
         const reader = new FileReader();
-        reader.onload = () => { data.img = reader.result; finalizeSave(data); };
+        reader.onload = () => { 
+            data.img = reader.result; 
+            finalizeSave(data); 
+            fileInput.value = ""; 
+        };
         reader.readAsDataURL(file);
-    } else { finalizeSave(data); }
+    } else { 
+        // Se não escolheu arquivo, finaliza com a imagem que já estava lá
+        finalizeSave(data); 
+    }
 }
 
 function finalizeSave(data) {
@@ -195,31 +118,6 @@ function finalizeSave(data) {
     else userAppData.items.push(data);
     renderGrid(); saveData(); closeModal('mangaModal');
 }
-
-// ARRASTAR CARDS
-const gridElementSort = document.getElementById('mangaGrid');
-if (gridElementSort) {
-    new Sortable(gridElementSort, {
-        animation: 200, delay: 500, delayOnTouchOnly: true,
-        onEnd: () => {
-            const cards = document.querySelectorAll('.card');
-            const newOrder = [];
-            cards.forEach(card => newOrder.push(userAppData.items[card.dataset.index]));
-            userAppData.items = newOrder;
-            renderGrid(); saveData();
-        }
-    });
-}
-
-function logout() { localStorage.removeItem('lastUser'); location.reload(); }
-function switchAuth(screen) {
-    document.getElementById('login-box').classList.add('hidden');
-    document.getElementById('register-box').classList.add('hidden');
-    document.getElementById(`${screen}-box`).classList.remove('hidden');
-}
-function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-function openAddModal() { editingIndex = -1; openModal('mangaModal'); }
 
 function showDetails(i) {
     editingIndex = i;
@@ -242,6 +140,32 @@ function showDetails(i) {
     openModal('detailModal');
 }
 
+function openAddModal() { 
+    editingIndex = -1; 
+    document.getElementById('mangaName').value = "";
+    document.getElementById('mangaCat').value = "";
+    document.getElementById('mangaStatus').value = "";
+    document.getElementById('mangaCaps').value = "";
+    document.getElementById('mangaLink').value = "";
+    document.getElementById('mangaImgInput').value = "";
+    openModal('mangaModal'); 
+}
+
+function changeTheme(color, save = true) {
+    if(!color.startsWith('#')) color = '#' + color;
+    document.documentElement.style.setProperty('--primary', color);
+    userAppData.theme = color;
+    if(save) saveData();
+}
+
+function logout() { localStorage.removeItem('lastUser'); location.reload(); }
+function switchAuth(screen) {
+    document.getElementById('login-box').classList.add('hidden');
+    document.getElementById('register-box').classList.add('hidden');
+    document.getElementById(`${screen}-box`).classList.remove('hidden');
+}
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function loadBanner(event) {
     const reader = new FileReader();
     reader.onload = () => {
@@ -252,12 +176,4 @@ function loadBanner(event) {
         saveData();
     };
     reader.readAsDataURL(event.target.files[0]);
-}
-
-function forgotPassword() {
-    const u = prompt("Usuário:");
-    const s = JSON.parse(localStorage.getItem(`user_${u}`));
-    if(!s) return alert("Não encontrado!");
-    if(prompt(`Pergunta: ${s.recovery}`) === s.recovery) alert(`Senha: ${s.pass}`);
-    else alert("Errado!");
 }
