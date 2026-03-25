@@ -46,29 +46,29 @@
         .tag-status { background: #fff9c4; color: #856404; }
         .manga-name { font-size: 0.8rem; font-weight: bold; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
 
-        .stars-container { color: #ffca28; font-size: 0.7rem; padding: 2px 4px; }
-        .star-rating-input { display: flex; justify-content: center; gap: 5px; margin: 10px 0; font-size: 1.5rem; color: #ddd; }
-        .star-rating-input i { cursor: pointer; }
-        .star-rating-input i.active { color: #ffca28; }
-
         .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
-        .modal-content { background: white; width: 100%; max-width: 380px; padding: 20px; border-radius: 25px; text-align: center; max-height: 90vh; overflow-y: auto; }
-        input, select { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #eee; border-radius: 12px; outline: none; background: #f9f9f9; }
+        .modal-content { background: white; width: 100%; max-width: 380px; padding: 30px; border-radius: 25px; text-align: center; }
+        input { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #eee; border-radius: 12px; outline: none; background: #f9f9f9; }
         .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: bold; margin-top: 10px; cursor: pointer; }
 
         .fab { position: fixed; bottom: 25px; right: 25px; width: 65px; height: 65px; border-radius: 50%; background: var(--primary); filter: brightness(0.9); border: none; font-size: 26px; z-index: 100; box-shadow: 0 8px 20px rgba(0,0,0,0.15); color: #444; }
         .config-btn { position: fixed; bottom: 25px; left: 25px; width: 55px; height: 55px; border-radius: 50%; background: #fff; border: none; z-index: 100; color: #888; font-size: 22px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+        .color-palette { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
+        .color-circle { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 2px solid #eee; position: relative; }
+        .custom-color-input { position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen">
         <div class="auth-box" id="login-box">
-            <img src="icon.png" class="app-logo">
+            <img src="icon.png" class="app-logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3652/3652191.png'">
             <h1>Bl Notes</h1>
             <input type="text" id="user-login" placeholder="Usuário">
             <input type="password" id="pass-login" placeholder="Senha">
             <button class="btn" style="background: var(--primary);" onclick="handleAuth('login')">Entrar</button>
+            <p style="margin-top: 15px; font-size: 0.75rem; color: #888; cursor: pointer;" onclick="forgotPassword()">Esqueci minha senha</p>
             <p style="margin-top: 20px; font-size: 0.8rem;"><span onclick="switchAuth('register')" style="cursor:pointer">Criar conta</span></p>
         </div>
         <div class="auth-box hidden" id="register-box">
@@ -84,7 +84,7 @@
     <div id="app-content" class="hidden">
         <header>
             <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
-                <img src="icon.png" class="header-icon">
+                <img src="icon.png" class="header-icon" onerror="this.style.display='none'">
                 <input type="text" id="list-title" class="editable-title" oninput="saveData()" value="Bl Notes">
             </div>
             <div class="banner-container" onclick="document.getElementById('bannerInput').click()">
@@ -103,32 +103,43 @@
     <div id="configModal" class="modal">
         <div class="modal-content">
             <h3>Tema & Cores</h3>
-            <input type="text" id="hexColorInput" placeholder="#HEXADECIMAL" style="text-align: center;" onchange="changeTheme(this.value)">
-            <button class="btn" style="background: #eee;" onclick="exportToPDF()">PDF da Lista</button>
-            <button class="btn" style="background: #ffcccb;" onclick="logout()">Sair</button>
+            <div class="color-palette">
+                <div class="color-circle" style="background: #e2e2ff;" onclick="changeTheme('#e2e2ff')"></div>
+                <div class="color-circle" style="background: #ffdee9;" onclick="changeTheme('#ffdee9')"></div>
+                <div class="color-circle" style="background: #d1f2ff;" onclick="changeTheme('#d1f2ff')"></div>
+                <div class="color-circle" style="background: #b5ead7;" onclick="changeTheme('#b5ead7')"></div>
+                <div class="color-circle" id="customColorCircle">
+                    <input type="color" class="custom-color-input" oninput="changeTheme(this.value)">
+                    <div style="display:flex;align-items:center;justify-content:center;height:100%"><i class="fas fa-eye-dropper" style="font-size:12px"></i></div>
+                </div>
+            </div>
+            <input type="text" id="hexColorInput" placeholder="#HEXADECIMAL" style="text-align: center; text-transform: uppercase;" onchange="changeTheme(this.value)">
+            
+            <h3 style="margin-top: 20px;">Backup & PDF</h3>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn" style="background: #b5ead7; flex: 1;" onclick="exportBackup()"><i class="fas fa-download"></i> Salvar</button>
+                <button class="btn" style="background: #d1f2ff; flex: 1;" onclick="document.getElementById('importFile').click()"><i class="fas fa-upload"></i> Restaurar</button>
+            </div>
+            <input type="file" id="importFile" hidden accept=".json" onchange="importBackup(event)">
+
+            <button class="btn" style="background: #eee; margin-top: 10px;" onclick="exportToPDF()">
+                <i class="fas fa-file-pdf"></i> Exportar Lista em PDF
+            </button>
+
+            <button class="btn" style="background: #ffcccb; margin-top: 20px;" onclick="logout()">Sair da Conta</button>
             <button class="btn" onclick="closeModal('configModal')">Fechar</button>
         </div>
     </div>
 
     <div id="mangaModal" class="modal">
         <div class="modal-content">
-            <h3 id="modalTitle">Obra</h3>
+            <h3 id="modalTitle">Nova Obra</h3>
             <input type="file" id="mangaImgInput" accept="image/*">
             <input type="text" id="mangaName" placeholder="Nome">
             <input type="text" id="mangaCat" placeholder="Tag">
             <input type="text" id="mangaStatus" placeholder="Status">
             <input type="text" id="mangaCaps" placeholder="Capítulo (Ex: 130 + 30 side)">
             <input type="url" id="mangaLink" placeholder="Link">
-            
-            <p style="margin-top:10px; font-size:0.9rem;">Sua nota:</p>
-            <div class="star-rating-input" id="starInput">
-                <i class="fas fa-star" data-value="1"></i>
-                <i class="fas fa-star" data-value="2"></i>
-                <i class="fas fa-star" data-value="3"></i>
-                <i class="fas fa-star" data-value="4"></i>
-                <i class="fas fa-star" data-value="5"></i>
-            </div>
-
             <button class="btn" style="background: var(--primary);" onclick="saveManga()">Salvar</button>
             <button class="btn" onclick="closeModal('mangaModal')">Cancelar</button>
         </div>
